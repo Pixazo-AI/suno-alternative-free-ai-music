@@ -1,0 +1,16 @@
+[
+  {
+    "id": "v2-pixazo-migration",
+    "date": "2026-03-23",
+    "title": "Switched to Pixazo Cloud API",
+    "body": "We migrated the backend to use the Pixazo Tracks API for cloud-based AI music generation. No local GPU required — generate music directly via Pixazo's cloud infrastructure.",
+    "tags": ["backend", "pixazo", "cloud"]
+  },
+  {
+    "id": "v1-training-experimental",
+    "date": "2025-02-09",
+    "title": "LoRA Training (Experimental)",
+    "body": "The training feature is now available but still experimental. You may encounter bugs during dataset building, preprocessing, or training. Bug reports and PRs are welcome!",
+    "tags": ["training", "experimental"]
+  }
+]
