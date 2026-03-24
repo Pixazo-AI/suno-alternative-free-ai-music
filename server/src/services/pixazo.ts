@@ -293,7 +293,7 @@ export async function discoverEndpoints(): Promise<unknown> {
 // Map UI params → Pixazo API request body
 // ---------------------------------------------------------------------------
 
-function buildPixazoBody(params: GenerationParams): Record<string, unknown> {
+async function buildPixazoBody(params: GenerationParams): Promise<Record<string, unknown>> {
   const prompt = params.customMode
     ? (params.style || 'pop music')
     : (params.songDescription || params.style || 'pop music');
@@ -339,9 +339,21 @@ function buildPixazoBody(params: GenerationParams): Record<string, unknown> {
     body.seed = -1; // random
   }
 
-  // Reference audio
+  // Reference audio — convert local files to base64 data URI
   if (params.referenceAudioUrl) {
-    body.reference_audio_url = params.referenceAudioUrl;
+    if (params.referenceAudioUrl.startsWith('http')) {
+      body.reference_audio_url = params.referenceAudioUrl;
+    } else if (params.referenceAudioUrl.startsWith('/')) {
+      try {
+        const localPath = path.join(AUDIO_DIR, '..', params.referenceAudioUrl.replace(/^\/audio\//, ''));
+        const fileBuffer = await readFile(localPath);
+        const ext = path.extname(localPath).replace('.', '') || 'mp3';
+        const mime = ext === 'mp3' ? 'audio/mpeg' : `audio/${ext}`;
+        body.reference_audio_url = `data:${mime};base64,${fileBuffer.toString('base64')}`;
+      } catch (err) {
+        console.warn('Failed to read reference audio file, skipping:', err);
+      }
+    }
   }
 
   return body;
@@ -387,7 +399,7 @@ async function processGeneration(
   job.status = 'running';
   job.stage = 'Submitting to Pixazo...';
 
-  const body = buildPixazoBody(params);
+  const body = await buildPixazoBody(params);
 
   console.log(`Job ${jobId}: Submitting to Pixazo`, {
     prompt: (body.prompt as string).slice(0, 80),
