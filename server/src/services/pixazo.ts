@@ -339,6 +339,11 @@ function buildPixazoBody(params: GenerationParams): Record<string, unknown> {
     body.seed = -1; // random
   }
 
+  // Reference audio
+  if (params.referenceAudioUrl) {
+    body.reference_audio_url = params.referenceAudioUrl;
+  }
+
   return body;
 }
 
