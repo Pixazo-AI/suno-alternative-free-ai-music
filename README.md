@@ -51,7 +51,7 @@ Start generating AI music for free in minutes:
 - **Share anywhere** — Twitter, Reddit, WhatsApp, Telegram, LinkedIn
 - **User profiles** — avatars, bios, followers
 - **Dark / Light theme** — fully responsive mobile layout
-- **Multi-language** — English, Chinese, Japanese, Korean
+- **Multi-language** — English, Chinese, Japanese, Korean, Hindi
 
 ## Tech Stack
 
@@ -137,7 +137,7 @@ You describe a song
 ├── server/
 │   ├── src/
 │   │   ├── index.ts           #   Express server
-│   │   ├── services/acestep.ts #  Pixazo API integration
+│   │   ├── services/pixazo.ts  #  Pixazo API integration
 │   │   ├── routes/            #   REST endpoints
 │   │   └── db/                #   SQLite
 │   └── .env                   #   Configuration

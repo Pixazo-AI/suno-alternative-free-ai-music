@@ -1,9 +1,9 @@
 @echo off
-REM ACE-Step UI Setup Script for Windows
+REM Pixazo Setup Script for Windows
 setlocal enabledelayedexpansion
 
 echo ==================================
-echo   ACE-Step UI Setup (Windows)
+echo   Pixazo Setup (Windows)
 echo ==================================
 echo.
 
@@ -61,11 +61,11 @@ echo ==================================
 echo.
 echo Next steps:
 echo.
-echo   1. Start ACE-Step API (in ACE-Step folder):
-echo      cd path\to\ACE-Step
-echo      uv run acestep-api --port 8001
+echo   1. Start Pixazo API (in Pixazo folder):
+echo      cd path\to\Pixazo
+echo      uv run pixazo-api --port 8001
 echo.
-echo   2. Start ACE-Step UI:
+echo   2. Start Pixazo:
 echo      start.bat
 echo.
 echo   3. Open http://localhost:3000

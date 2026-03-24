@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Format lyrics and style using the 5Hz LLM.
 
-This script uses ACE-Step's format_sample to enhance user input with AI-generated
+This script uses Pixazo's format_sample to enhance user input with AI-generated
 music metadata (BPM, duration, key, time signature, enhanced description).
 """
 import argparse
@@ -11,9 +11,9 @@ import sys
 import time
 import torch
 
-# Get ACE-Step path from environment or use default
-ACESTEP_PATH = os.environ.get('ACESTEP_PATH', '/home/ambsd/Desktop/aceui/ACE-Step-1.5')
-sys.path.insert(0, ACESTEP_PATH)
+# Get Pixazo path from environment or use default
+PIXAZO_PATH = os.environ.get('PIXAZO_PATH', '/home/ambsd/Desktop/aceui/Pixazo')
+sys.path.insert(0, PIXAZO_PATH)
 
 from acestep.llm_inference import LLMHandler
 from acestep.inference import format_sample
@@ -27,8 +27,8 @@ def get_llm_handler(lm_model=None, lm_backend=None):
     global _llm_handler
     if _llm_handler is None:
         _llm_handler = LLMHandler()
-        checkpoint_dir = os.path.join(ACESTEP_PATH, "checkpoints")
-        lm_model_path = lm_model or "acestep-5Hz-lm-0.6B"  # Default to smallest model
+        checkpoint_dir = os.path.join(PIXAZO_PATH, "checkpoints")
+        lm_model_path = lm_model or "pixazo-5Hz-lm-0.6B"  # Default to smallest model
         backend = lm_backend or "pt"
 
         # Auto-download model if not present
@@ -114,7 +114,7 @@ def format_input(
     }
 
 def main():
-    parser = argparse.ArgumentParser(description="Format lyrics and style using ACE-Step LLM")
+    parser = argparse.ArgumentParser(description="Format lyrics and style using Pixazo LLM")
     parser.add_argument("--caption", type=str, required=True, help="Style/caption description")
     parser.add_argument("--lyrics", type=str, default="", help="Lyrics text")
     parser.add_argument("--bpm", type=int, default=0, help="Optional BPM constraint")
@@ -124,7 +124,7 @@ def main():
     parser.add_argument("--temperature", type=float, default=0.85, help="LLM temperature")
     parser.add_argument("--top-k", type=int, default=0, help="LLM top-k sampling")
     parser.add_argument("--top-p", type=float, default=0.9, help="LLM top-p sampling")
-    parser.add_argument("--lm-model", type=str, default=None, help="LM model name (e.g. acestep-5Hz-lm-0.6B, acestep-5Hz-lm-1.7B, acestep-5Hz-lm-4B)")
+    parser.add_argument("--lm-model", type=str, default=None, help="LM model name (e.g. pixazo-5Hz-lm-0.6B, pixazo-5Hz-lm-1.7B, pixazo-5Hz-lm-4B)")
     parser.add_argument("--lm-backend", type=str, default=None, help="LM backend (pt or vllm)")
     parser.add_argument("--json", action="store_true", help="Output as JSON")
 

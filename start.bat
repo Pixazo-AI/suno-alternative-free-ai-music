@@ -1,9 +1,9 @@
 @echo off
-REM ACE-Step UI Startup Script for Windows
+REM Pixazo Startup Script for Windows
 setlocal
 
 echo ==================================
-echo   ACE-Step UI (Windows)
+echo   Pixazo (Windows)
 echo ==================================
 echo.
 
@@ -29,18 +29,18 @@ for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /c:"IPv4"') do (
     )
 )
 
-echo Starting ACE-Step UI...
+echo Starting Pixazo...
 echo.
-echo Make sure ACE-Step API is running:
-echo   cd path\to\ACE-Step
-echo   uv run acestep-api --port 8001
+echo Make sure Pixazo API is running:
+echo   cd path\to\Pixazo
+echo   uv run pixazo-api --port 8001
 echo.
 echo ==================================
 echo.
 
 REM Start backend in new window
 echo Starting backend server...
-start "ACE-Step UI Backend" cmd /k "cd server && npm run dev"
+start "Pixazo Backend" cmd /k "cd server && npm run dev"
 
 REM Wait for backend to start
 echo Waiting for backend to start...
@@ -48,14 +48,14 @@ timeout /t 3 /nobreak >nul
 
 REM Start frontend in new window
 echo Starting frontend...
-start "ACE-Step UI Frontend" cmd /k "npm run dev"
+start "Pixazo Frontend" cmd /k "npm run dev"
 
 REM Wait a moment
 timeout /t 2 /nobreak >nul
 
 echo.
 echo ==================================
-echo   ACE-Step UI Running!
+echo   Pixazo Running!
 echo ==================================
 echo.
 echo   Frontend: http://localhost:3000

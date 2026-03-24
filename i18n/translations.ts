@@ -43,7 +43,7 @@ export const translations = {
     failedToDeleteSong: 'Failed to delete song',
     
     // Sidebar
-    aceStepUI: 'Pixazo',
+    pixazoUI: 'Pixazo',
     collapseSidebar: 'Collapse Sidebar',
     expandSidebar: 'Expand Sidebar',
 
@@ -642,7 +642,7 @@ export const translations = {
     failedToDeleteSong: '删除歌曲失败',
     
     // Sidebar
-    aceStepUI: 'Pixazo',
+    pixazoUI: 'Pixazo',
     collapseSidebar: '收起侧边栏',
     expandSidebar: '展开侧边栏',
 
@@ -1241,7 +1241,7 @@ export const translations = {
     failedToDeleteSong: '曲の削除に失敗しました',
     
     // Sidebar
-    aceStepUI: 'Pixazo',
+    pixazoUI: 'Pixazo',
     collapseSidebar: 'サイドバーを折りたたむ',
     expandSidebar: 'サイドバーを展開',
 
@@ -1840,7 +1840,7 @@ export const translations = {
     failedToDeleteSong: '곡 삭제에 실패했습니다',
     
     // Sidebar
-    aceStepUI: 'Pixazo',
+    pixazoUI: 'Pixazo',
     collapseSidebar: '사이드바 접기',
     expandSidebar: '사이드바 펼치기',
 

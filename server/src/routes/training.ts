@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { authMiddleware, AuthenticatedRequest } from '../middleware/auth.js';
 import { getGradioClient } from '../services/gradio-client.js';
 import { config } from '../config/index.js';
-import { resolvePythonPath } from '../services/acestep.js';
+import { resolvePythonPath } from '../services/pixazo.js';
 import multer from 'multer';
 import path from 'path';
 import { existsSync, readdirSync, statSync, readFileSync } from 'fs';
@@ -63,8 +63,8 @@ function getAudioDuration(filePath: string): number {
 }
 
 // Resolve Pixazo base directory
-function getAceStepDir(): string {
-  const envPath = process.env.ACESTEP_PATH;
+function getPixazoDir(): string {
+  const envPath = process.env.PIXAZO_PATH;
   if (envPath) {
     return path.isAbsolute(envPath) ? envPath : path.resolve(process.cwd(), envPath);
   }
@@ -260,7 +260,7 @@ router.post('/build-dataset', authMiddleware, async (req: AuthenticatedRequest, 
 router.get('/audio', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   try {
     let filePath: string;
-    const aceStepDir = getAceStepDir();
+    const pixazoDir = getPixazoDir();
 
     if (req.query.path) {
       filePath = req.query.path as string;
@@ -274,7 +274,7 @@ router.get('/audio', authMiddleware, async (req: AuthenticatedRequest, res: Resp
 
     // Path traversal protection
     const resolved = path.resolve(filePath);
-    if (resolved.includes('..') || !resolved.startsWith(aceStepDir)) {
+    if (resolved.includes('..') || !resolved.startsWith(pixazoDir)) {
       res.status(403).json({ error: 'Access denied: path outside Pixazo directory' });
       return;
     }
@@ -311,9 +311,9 @@ router.post('/preprocess', authMiddleware, async (req: AuthenticatedRequest, res
       return;
     }
 
-    const aceStepDir = getAceStepDir();
+    const pixazoDir = getPixazoDir();
     const scriptPath = path.resolve(__dirname, '../../scripts/preprocess_dataset.py');
-    const pythonPath = resolvePythonPath(aceStepDir);
+    const pythonPath = resolvePythonPath(pixazoDir);
     const resolvedOutput = outputDir || path.join(config.datasets.dir, 'preprocessed_tensors');
 
     // Ensure output dir exists
@@ -326,7 +326,7 @@ router.post('/preprocess', authMiddleware, async (req: AuthenticatedRequest, res
       '--output', resolvedOutput,
       '--json',
     ], {
-      cwd: aceStepDir,
+      cwd: pixazoDir,
       env: { ...process.env },
     });
 
@@ -381,10 +381,10 @@ router.post('/scan-directory', authMiddleware, async (req: AuthenticatedRequest,
     }
 
     // Resolve path — if relative, resolve from Pixazo dir
-    const aceStepDir = getAceStepDir();
+    const pixazoDir = getPixazoDir();
     const resolvedDir = path.isAbsolute(audioDir)
       ? audioDir
-      : path.resolve(aceStepDir, audioDir);
+      : path.resolve(pixazoDir, audioDir);
 
     if (!existsSync(resolvedDir)) {
       res.status(400).json({ error: `Directory not found: ${audioDir}` });
@@ -531,8 +531,8 @@ router.post('/init-model', authMiddleware, async (req: AuthenticatedRequest, res
 // GET /api/training/checkpoints — List available model checkpoints
 router.get('/checkpoints', authMiddleware, async (_req: AuthenticatedRequest, res: Response) => {
   try {
-    const aceStepDir = getAceStepDir();
-    const checkpointDir = path.join(aceStepDir, 'checkpoints');
+    const pixazoDir = getPixazoDir();
+    const checkpointDir = path.join(pixazoDir, 'checkpoints');
     if (!existsSync(checkpointDir)) {
       res.json({ checkpoints: [], configs: [] });
       return;
@@ -545,9 +545,9 @@ router.get('/checkpoints', authMiddleware, async (_req: AuthenticatedRequest, re
       return statSync(fullPath).isDirectory();
     });
 
-    // List config directories (acestep-v15-*)
+    // List config directories (pixazo-v15-* or acestep-v15-*)
     const configDirs = entries.filter(e =>
-      e.startsWith('acestep-v15') && statSync(path.join(checkpointDir, e)).isDirectory()
+      (e.startsWith('pixazo-v15') || e.startsWith('acestep-v15')) && statSync(path.join(checkpointDir, e)).isDirectory()
     );
 
     res.json({ checkpoints, configs: configDirs });
@@ -561,10 +561,10 @@ router.get('/checkpoints', authMiddleware, async (_req: AuthenticatedRequest, re
 router.get('/lora-checkpoints', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const outputDir = (req.query.dir as string) || './lora_output';
-    const aceStepDir = getAceStepDir();
+    const pixazoDir = getPixazoDir();
     const resolvedDir = path.isAbsolute(outputDir)
       ? outputDir
-      : path.resolve(aceStepDir, outputDir);
+      : path.resolve(pixazoDir, outputDir);
 
     if (!existsSync(resolvedDir)) {
       res.json({ checkpoints: [] });
@@ -730,7 +730,7 @@ router.post('/save-dataset', authMiddleware, async (req: AuthenticatedRequest, r
     const resolvedPath = (savePath ?? `./datasets/${datasetName ?? 'my_lora_dataset'}.json`).trim();
 
     // Use REST API to avoid @gradio/client Radio serialization issues
-    const apiUrl = config.acestep.apiUrl;
+    const apiUrl = config.localEngine.apiUrl;
     const body: Record<string, unknown> = {
       save_path: resolvedPath,
       dataset_name: datasetName ?? 'my_lora_dataset',

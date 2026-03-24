@@ -1,7 +1,7 @@
 #!/bin/bash
-# ACE-Step UI Stop All Services Script
+# Pixazo Stop All Services Script
 
-echo "Stopping all ACE-Step services..."
+echo "Stopping all Pixazo services..."
 
 if [ -f logs/api.pid ]; then
     API_PID=$(cat logs/api.pid)

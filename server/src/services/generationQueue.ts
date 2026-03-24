@@ -1,4 +1,4 @@
-import type { GenerationParams } from './acestep.js';
+import type { GenerationParams } from './pixazo.js';
 
 type Tier = 'free' | 'pro' | 'unlimited';
 

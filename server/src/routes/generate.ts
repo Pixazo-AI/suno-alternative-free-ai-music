@@ -14,7 +14,7 @@ import {
   cleanupJob,
   getJobRawResponse,
   downloadAudioToBuffer,
-} from '../services/acestep.js';
+} from '../services/pixazo.js';
 import { getStorageProvider } from '../services/storage/factory.js';
 
 const router = Router();
@@ -345,7 +345,7 @@ router.post('/', authMiddleware, async (req: AuthenticatedRequest, res: Response
 
     // Update job with Pixazo task ID
     await pool.query(
-      `UPDATE generation_jobs SET acestep_task_id = ?, status = 'running', updated_at = datetime('now') WHERE id = ?`,
+      `UPDATE generation_jobs SET pixazo_task_id = ?, status = 'running', updated_at = datetime('now') WHERE id = ?`,
       [hfJobId, localJobId]
     );
 
@@ -363,7 +363,7 @@ router.post('/', authMiddleware, async (req: AuthenticatedRequest, res: Response
 router.get('/status/:jobId', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const jobResult = await pool.query(
-      `SELECT id, user_id, acestep_task_id, status, params, result, error, created_at
+      `SELECT id, user_id, pixazo_task_id, status, params, result, error, created_at
        FROM generation_jobs
        WHERE id = ?`,
       [req.params.jobId]
@@ -382,9 +382,9 @@ router.get('/status/:jobId', authMiddleware, async (req: AuthenticatedRequest, r
     }
 
     // If job is still running, check Pixazo status
-    if (['pending', 'queued', 'running'].includes(job.status) && job.acestep_task_id) {
+    if (['pending', 'queued', 'running'].includes(job.status) && job.pixazo_task_id) {
       try {
-        const aceStatus = await getJobStatus(job.acestep_task_id);
+        const aceStatus = await getJobStatus(job.pixazo_task_id);
 
         if (aceStatus.status !== job.status) {
           // Use optimistic lock: only update if status hasn't changed (prevents duplicate song creation)
@@ -481,7 +481,7 @@ router.get('/status/:jobId', authMiddleware, async (req: AuthenticatedRequest, r
             }
 
             aceStatus.result.audioUrls = localPaths;
-            cleanupJob(job.acestep_task_id);
+            cleanupJob(job.pixazo_task_id);
           }
         }
 
@@ -568,7 +568,7 @@ router.get('/audio', async (req, res: Response) => {
 router.get('/history', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const result = await pool.query(
-      `SELECT id, acestep_task_id, status, params, result, error, created_at
+      `SELECT id, pixazo_task_id, status, params, result, error, created_at
        FROM generation_jobs
        WHERE user_id = ?
        ORDER BY created_at DESC

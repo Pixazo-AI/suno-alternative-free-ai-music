@@ -45,12 +45,12 @@ const getModelDisplayName = (modelId?: string): string => {
     
     const mapping: Record<string, string> = {
         'pixazo-tracks-v1': 'Pixazo',
-        'acestep-v15-base': '1.5B',
-        'acestep-v15-sft': '1.5S',
-        'acestep-v15-turbo-shift1': '1.5TS1',
-        'acestep-v15-turbo-shift3': '1.5TS3',
-        'acestep-v15-turbo-continuous': '1.5TC',
-        'acestep-v15-turbo': '1.5T',
+        'pixazo-v15-base': '1.5B',
+        'pixazo-v15-sft': '1.5S',
+        'pixazo-v15-turbo-shift1': '1.5TS1',
+        'pixazo-v15-turbo-shift3': '1.5TS3',
+        'pixazo-v15-turbo-continuous': '1.5TC',
+        'pixazo-v15-turbo': '1.5T',
     };
     return mapping[modelId] || 'Pixazo';
 };

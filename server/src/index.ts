@@ -1,3 +1,8 @@
+import dns from 'dns';
+// Force IPv4-first: IPv6 is unreachable for some upstream hosts (e.g. Cloudflare)
+// which causes Node fetch (undici) to hang until timeout.
+dns.setDefaultResultOrder('ipv4first');
+
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Simple music generation script that works like the Gradio interface.
 
-This is a wrapper script that calls ACE-Step without modifying the original repo.
-Supports all ACE-Step generation parameters.
+This is a wrapper script that calls Pixazo without modifying the original repo.
+Supports all Pixazo generation parameters.
 """
 import argparse
 import json
@@ -11,11 +11,11 @@ import sys
 import time
 import torch
 
-# Get ACE-Step path from environment or use default
-ACESTEP_PATH = os.environ.get('ACESTEP_PATH', '/home/ambsd/Desktop/aceui/ACE-Step-1.5')
+# Get Pixazo path from environment or use default
+PIXAZO_PATH = os.environ.get('PIXAZO_PATH', '/home/ambsd/Desktop/aceui/Pixazo')
 
-# Add ACE-Step to path
-sys.path.insert(0, ACESTEP_PATH)
+# Add Pixazo to path
+sys.path.insert(0, PIXAZO_PATH)
 
 from acestep.handler import AceStepHandler
 from acestep.llm_inference import LLMHandler
@@ -36,7 +36,7 @@ def get_handlers():
             device = "cpu"
         _handler = AceStepHandler()
         _handler.initialize_service(
-            project_root=ACESTEP_PATH,
+            project_root=PIXAZO_PATH,
             config_path="acestep-v15-turbo",
             device=device,
             offload_to_cpu=True,  # For 12GB GPU
@@ -96,7 +96,7 @@ def generate(
     handler, llm_handler = get_handlers()
 
     if output_dir is None:
-        output_dir = os.path.join(ACESTEP_PATH, "output")
+        output_dir = os.path.join(PIXAZO_PATH, "output")
     os.makedirs(output_dir, exist_ok=True)
 
     # Build generation params
@@ -170,7 +170,7 @@ def generate(
     }
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate music with ACE-Step")
+    parser = argparse.ArgumentParser(description="Generate music with Pixazo")
 
     # Basic parameters
     parser.add_argument("--prompt", type=str, required=True, help="Music description")

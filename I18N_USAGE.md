@@ -1,4 +1,4 @@
-# ACE-Step UI — Internationalization Guide
+# Pixazo Music — Internationalization Guide
 
 ## Overview
 
@@ -7,7 +7,7 @@ The project supports 4 languages: English (default), Chinese, Japanese, and Kore
 ## Architecture
 
 ```
-ace-step-ui/
+pixazo-music/
 ├── i18n/
 │   └── translations.ts          # All translation strings
 ├── context/

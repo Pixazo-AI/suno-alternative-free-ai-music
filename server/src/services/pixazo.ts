@@ -1,5 +1,6 @@
 import { writeFile, mkdir, readFile } from 'fs/promises';
 import { existsSync } from 'fs';
+import https from 'https';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { config } from '../config/index.js';
@@ -15,7 +16,83 @@ const PIXAZO_KEY = config.pixazo.subscriptionKey;
 // Pixazo API helpers
 // ---------------------------------------------------------------------------
 
-function pixazoHeaders(): HeadersInit {
+const REQUEST_TIMEOUT_MS = 30_000;
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 2_000;
+
+/**
+ * Make an HTTPS request using Node's https module with family:4 (IPv4 only).
+ * Node 20's built-in fetch (undici) tries IPv6 addresses that are unreachable
+ * on some networks, causing ETIMEDOUT before IPv4 gets a chance.
+ */
+function httpsRequest(
+  url: string,
+  method: string,
+  headers: Record<string, string>,
+  body?: string,
+): Promise<{ status: number; body: string; headers: Record<string, string> }> {
+  return new Promise((resolve, reject) => {
+    const parsed = new URL(url);
+    const req = https.request(
+      {
+        hostname: parsed.hostname,
+        port: parsed.port ? Number(parsed.port) : 443,
+        path: parsed.pathname + parsed.search,
+        method,
+        headers,
+        timeout: REQUEST_TIMEOUT_MS,
+        family: 4, // Force IPv4 — avoids undici autoSelectFamily IPv6 hang
+      },
+      (res) => {
+        let data = '';
+        res.on('data', (chunk: Buffer) => (data += chunk.toString()));
+        res.on('end', () => resolve({
+          status: res.statusCode ?? 0,
+          body: data,
+          headers: (res.headers as Record<string, string>) || {},
+        }));
+      },
+    );
+    req.on('timeout', () => { req.destroy(); reject(new Error('Request timed out')); });
+    req.on('error', reject);
+    if (body) req.write(body);
+    req.end();
+  });
+}
+
+function httpsDownload(
+  url: string,
+  headers: Record<string, string> = {},
+): Promise<{ status: number; buffer: Buffer; contentType: string }> {
+  return new Promise((resolve, reject) => {
+    const parsed = new URL(url);
+    const req = https.request(
+      {
+        hostname: parsed.hostname,
+        port: parsed.port ? Number(parsed.port) : 443,
+        path: parsed.pathname + parsed.search,
+        method: 'GET',
+        headers,
+        timeout: REQUEST_TIMEOUT_MS,
+        family: 4,
+      },
+      (res) => {
+        const chunks: Buffer[] = [];
+        res.on('data', (chunk: Buffer) => chunks.push(chunk));
+        res.on('end', () => resolve({
+          status: res.statusCode ?? 0,
+          buffer: Buffer.concat(chunks),
+          contentType: (res.headers['content-type'] as string) || '',
+        }));
+      },
+    );
+    req.on('timeout', () => { req.destroy(); reject(new Error('Download timed out')); });
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+function pixazoHeaders(): Record<string, string> {
   return {
     'Content-Type': 'application/json',
     'Cache-Control': 'no-cache',
@@ -23,40 +100,53 @@ function pixazoHeaders(): HeadersInit {
   };
 }
 
+async function pixazoRequest(url: string, body: string, label: string): Promise<{ status: number; body: string }> {
+  let lastError: Error | undefined;
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      return await httpsRequest(url, 'POST', pixazoHeaders(), body);
+    } catch (err: unknown) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      const isLast = attempt === MAX_RETRIES;
+      console.warn(`${label}: attempt ${attempt}/${MAX_RETRIES} failed — ${lastError.message}${isLast ? '' : ', retrying...'}`);
+      if (!isLast) await new Promise(r => setTimeout(r, RETRY_DELAY_MS * attempt));
+    }
+  }
+  throw lastError!;
+}
+
 /**
  * Submit a music generation request to Pixazo Tracks API.
  */
 async function pixazoGenerate(body: Record<string, unknown>): Promise<{ task_id: string; status: string; message?: string }> {
-  const res = await fetch(`${PIXAZO_API}/tracks/v1/generate`, {
-    method: 'POST',
-    headers: pixazoHeaders(),
-    body: JSON.stringify(body),
-  });
+  const res = await pixazoRequest(
+    `${PIXAZO_API}/tracks/v1/generate`,
+    JSON.stringify(body),
+    'Pixazo generate',
+  );
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(`Pixazo generate failed (${res.status}): ${text}`);
+  if (res.status < 200 || res.status >= 300) {
+    throw new Error(`Pixazo generate failed (${res.status}): ${res.body}`);
   }
 
-  return res.json() as Promise<{ task_id: string; status: string; message?: string }>;
+  return JSON.parse(res.body) as { task_id: string; status: string; message?: string };
 }
 
 /**
  * Poll Pixazo for generation status / result.
  */
 async function pixazoPollStatus(taskId: string): Promise<Record<string, unknown>> {
-  const res = await fetch(`${PIXAZO_API}/tracks/v1/status`, {
-    method: 'POST',
-    headers: pixazoHeaders(),
-    body: JSON.stringify({ task_id: taskId }),
-  });
+  const res = await pixazoRequest(
+    `${PIXAZO_API}/tracks/v1/status`,
+    JSON.stringify({ task_id: taskId }),
+    'Pixazo status',
+  );
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(`Pixazo status check failed (${res.status}): ${text}`);
+  if (res.status < 200 || res.status >= 300) {
+    throw new Error(`Pixazo status check failed (${res.status}): ${res.body}`);
   }
 
-  return res.json() as Promise<Record<string, unknown>>;
+  return JSON.parse(res.body) as Record<string, unknown>;
 }
 
 // ---------------------------------------------------------------------------
@@ -182,12 +272,12 @@ setInterval(() => cleanupOldJobs(3600000), 600000);
 
 export async function checkSpaceHealth(): Promise<boolean> {
   try {
-    const res = await fetch(`${PIXAZO_API}/tracks/v1/status`, {
-      method: 'POST',
-      headers: pixazoHeaders(),
-      body: JSON.stringify({ task_id: 'health-check' }),
-      signal: AbortSignal.timeout(10000),
-    });
+    const res = await httpsRequest(
+      `${PIXAZO_API}/tracks/v1/status`,
+      'POST',
+      pixazoHeaders(),
+      JSON.stringify({ task_id: 'health-check' }),
+    );
     // Any response (even 4xx for invalid task) means the API is reachable
     return res.status < 500;
   } catch {
@@ -313,10 +403,24 @@ async function processGeneration(
   const pollInterval = 3000; // 3 seconds between polls
   const startTime = Date.now();
 
+  let consecutivePollErrors = 0;
+  const MAX_CONSECUTIVE_POLL_ERRORS = 5;
+
   while (Date.now() - startTime < maxPollTime) {
     await new Promise(resolve => setTimeout(resolve, pollInterval));
 
-    const statusResult = await pixazoPollStatus(submitResult.task_id);
+    let statusResult: Record<string, unknown>;
+    try {
+      statusResult = await pixazoPollStatus(submitResult.task_id);
+      consecutivePollErrors = 0;
+    } catch (pollErr) {
+      consecutivePollErrors++;
+      console.warn(`Job ${jobId}: Poll error (${consecutivePollErrors}/${MAX_CONSECUTIVE_POLL_ERRORS}):`, pollErr);
+      if (consecutivePollErrors >= MAX_CONSECUTIVE_POLL_ERRORS) {
+        throw new Error(`Pixazo polling failed after ${MAX_CONSECUTIVE_POLL_ERRORS} consecutive errors: ${pollErr}`);
+      }
+      continue;
+    }
     job.rawResponse = statusResult;
 
     const status = (statusResult.status as string || '').toLowerCase();
@@ -433,12 +537,12 @@ function extractAudioUrls(result: Record<string, unknown>): string[] {
 async function downloadRemoteAudio(remoteUrl: string, jobId: string, index: number): Promise<string> {
   await mkdir(AUDIO_DIR, { recursive: true });
 
-  const response = await fetch(remoteUrl);
-  if (!response.ok) {
-    throw new Error(`Failed to download audio: ${response.status}`);
+  const dlRes = await httpsDownload(remoteUrl);
+  if (dlRes.status < 200 || dlRes.status >= 300) {
+    throw new Error(`Failed to download audio: ${dlRes.status}`);
   }
 
-  const buffer = Buffer.from(await response.arrayBuffer());
+  const buffer = dlRes.buffer;
   if (buffer.length === 0) {
     throw new Error('Downloaded audio file is empty');
   }
@@ -447,11 +551,8 @@ async function downloadRemoteAudio(remoteUrl: string, jobId: string, index: numb
   let ext = '.mp3';
   if (remoteUrl.includes('.flac')) ext = '.flac';
   else if (remoteUrl.includes('.wav')) ext = '.wav';
-  else {
-    const ct = response.headers.get('content-type') || '';
-    if (ct.includes('flac')) ext = '.flac';
-    else if (ct.includes('wav')) ext = '.wav';
-  }
+  else if (dlRes.contentType.includes('flac')) ext = '.flac';
+  else if (dlRes.contentType.includes('wav')) ext = '.wav';
 
   const filename = `${jobId}_${index}${ext}`;
   const destPath = path.join(AUDIO_DIR, filename);
@@ -523,7 +624,12 @@ export function getJobRawResponse(jobId: string): unknown | null {
 
 export async function getAudioStream(audioPath: string): Promise<Response> {
   if (audioPath.startsWith('http')) {
-    return fetch(audioPath);
+    const dl = await httpsDownload(audioPath);
+    const ext = audioPath.endsWith('.flac') ? 'flac' : 'mpeg';
+    return new Response(dl.buffer, {
+      status: dl.status,
+      headers: { 'Content-Type': dl.contentType || `audio/${ext}` },
+    });
   }
 
   if (audioPath.startsWith('/audio/')) {

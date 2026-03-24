@@ -1,54 +1,54 @@
 #!/bin/bash
-# ACE-Step UI Setup Script
+# Pixazo Setup Script
 
 set -e
 
 echo "=================================="
-echo "  ACE-Step UI Setup"
+echo "  Pixazo Setup"
 echo "=================================="
 
-# Check if ACE-Step exists
-ACESTEP_PATH="${ACESTEP_PATH:-../ACE-Step-1.5}"
+# Check if Pixazo exists
+PIXAZO_PATH="${PIXAZO_PATH:-../Pixazo}"
 
-if [ ! -d "$ACESTEP_PATH" ]; then
-    echo "Error: ACE-Step not found at $ACESTEP_PATH"
+if [ ! -d "$PIXAZO_PATH" ]; then
+    echo "Error: Pixazo not found at $PIXAZO_PATH"
     echo ""
-    echo "Please clone ACE-Step first:"
+    echo "Please clone Pixazo first:"
     echo "  cd .."
     echo "  git clone https://github.com/ace-step/ACE-Step-1.5"
-    echo "  cd ACE-Step-1.5"
+    echo "  cd Pixazo"
     echo "  uv venv && uv pip install -e ."
-    echo "  cd ../ace-step-ui"
+    echo "  cd ../pixazo-music"
     echo "  ./setup.sh"
     exit 1
 fi
 
-if [ ! -d "$ACESTEP_PATH/.venv" ]; then
-    echo "Error: ACE-Step venv not found. Please set up ACE-Step first:"
-    echo "  cd $ACESTEP_PATH"
+if [ ! -d "$PIXAZO_PATH/.venv" ]; then
+    echo "Error: Pixazo venv not found. Please set up Pixazo first:"
+    echo "  cd $PIXAZO_PATH"
     echo "  uv venv && uv pip install -e ."
     exit 1
 fi
 
-echo "Found ACE-Step at: $ACESTEP_PATH"
+echo "Found Pixazo at: $PIXAZO_PATH"
 
 # Get absolute path
-ACESTEP_PATH=$(cd "$ACESTEP_PATH" && pwd)
+PIXAZO_PATH=$(cd "$PIXAZO_PATH" && pwd)
 
 # Create .env file
 echo "Creating .env file..."
 cat > .env << EOF
-# ACE-Step UI Configuration
+# Pixazo Configuration
 
-# Path to ACE-Step installation
-ACESTEP_PATH=$ACESTEP_PATH
+# Path to Pixazo installation
+PIXAZO_PATH=$PIXAZO_PATH
 
 # Server ports
 PORT=3001
 FRONTEND_PORT=3000
 
 # Database
-DATABASE_PATH=./server/data/acestep.db
+DATABASE_PATH=./server/data/pixazo.db
 EOF
 
 # Install frontend dependencies

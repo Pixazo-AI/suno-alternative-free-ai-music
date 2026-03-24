@@ -1,11 +1,11 @@
 #!/bin/bash
-# ACE-Step UI Complete Startup Script for Linux/macOS
-# Starts ACE-Step API + Backend + Frontend
+# Pixazo Complete Startup Script for Linux/macOS
+# Starts Pixazo API + Backend + Frontend
 
 set -e
 
 echo "=================================="
-echo "  ACE-Step Complete Startup"
+echo "  Pixazo Complete Startup"
 echo "=================================="
 echo
 
@@ -22,16 +22,16 @@ if [ ! -d "server/node_modules" ]; then
     exit 1
 fi
 
-# Get ACE-Step path from environment or use default
-ACESTEP_PATH="${ACESTEP_PATH:-../ACE-Step-1.5}"
+# Get Pixazo path from environment or use default
+PIXAZO_PATH="${PIXAZO_PATH:-../Pixazo}"
 
-# Check if ACE-Step exists
-if [ ! -d "$ACESTEP_PATH" ]; then
+# Check if Pixazo exists
+if [ ! -d "$PIXAZO_PATH" ]; then
     echo
-    echo "Warning: ACE-Step not found at $ACESTEP_PATH"
+    echo "Warning: Pixazo not found at $PIXAZO_PATH"
     echo
-    echo "Please set ACESTEP_PATH or place ACE-Step-1.5 next to ace-step-ui"
-    echo "Example: export ACESTEP_PATH=/path/to/ACE-Step-1.5"
+    echo "Please set PIXAZO_PATH or place Pixazo next to pixazo-music"
+    echo "Example: export PIXAZO_PATH=/path/to/Pixazo"
     echo
     exit 1
 fi
@@ -52,10 +52,10 @@ echo
 # Create log directory
 mkdir -p logs
 
-# Start ACE-Step API in background
-echo "[1/3] Starting ACE-Step API server..."
-cd "$ACESTEP_PATH"
-uv run acestep-api --port 8001 > "../ace-step-ui/logs/api.log" 2>&1 &
+# Start Pixazo API in background
+echo "[1/3] Starting Pixazo API server..."
+cd "$PIXAZO_PATH"
+uv run pixazo-api --port 8001 > "../pixazo-music/logs/api.log" 2>&1 &
 API_PID=$!
 cd - > /dev/null
 
@@ -107,7 +107,7 @@ echo "=================================="
 echo "  All Services Running!"
 echo "=================================="
 echo
-echo "  ACE-Step API: http://localhost:8001"
+echo "  Pixazo API:   http://localhost:8001"
 echo "  Backend:      http://localhost:3001"
 echo "  Frontend:     http://localhost:3000"
 echo

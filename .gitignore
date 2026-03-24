@@ -57,14 +57,6 @@ lerna-debug.log*
 *.swo
 *~
 
-# All dotfiles
-.*
-!.gitignore
-!.env.example
-
-# Docs
-docs/demo.gif
-
 # OS files
 .DS_Store
 Thumbs.db
@@ -95,7 +87,7 @@ __pycache__/
 # Misc
 ComfyUI/
 comfyui/
-ACE-Step-1.5/
+Pixazo/
 
 # External editors (wavacity is 184MB - clone separately if needed)
 wavacity-editor/

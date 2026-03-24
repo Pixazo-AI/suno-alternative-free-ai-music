@@ -14,14 +14,14 @@ export async function getGradioClient(): Promise<Client> {
 
   connectionPromise = (async () => {
     try {
-      const client = await Client.connect(config.acestep.apiUrl, {
+      const client = await Client.connect(config.localEngine.apiUrl, {
         events: ["data", "status"],
       });
       clientInstance = client;
-      console.log(`[Gradio] Connected to ${config.acestep.apiUrl}`);
+      console.log(`[Gradio] Connected to ${config.localEngine.apiUrl}`);
       return client;
     } catch (error) {
-      console.error(`[Gradio] Failed to connect to ${config.acestep.apiUrl}:`, error);
+      console.error(`[Gradio] Failed to connect to ${config.localEngine.apiUrl}:`, error);
       throw error;
     } finally {
       connectionPromise = null;
@@ -44,7 +44,7 @@ export function resetGradioClient(): void {
  * Tries multiple well-known endpoints to handle version differences.
  */
 export async function isGradioAvailable(): Promise<boolean> {
-  const baseUrl = config.acestep.apiUrl;
+  const baseUrl = config.localEngine.apiUrl;
   const candidates = [
     `${baseUrl}/gradio_api/info`, // Gradio 5+
     `${baseUrl}/info`,            // Gradio 4.x fallback

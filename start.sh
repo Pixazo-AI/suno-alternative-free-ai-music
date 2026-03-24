@@ -1,5 +1,5 @@
 #!/bin/bash
-# Start ACE-Step UI (both frontend and backend)
+# Start Pixazo (both frontend and backend)
 
 set -e
 
@@ -8,14 +8,14 @@ if [ -f .env ]; then
     export $(cat .env | grep -v '^#' | xargs)
 fi
 
-# Check ACE-Step path
-if [ ! -d "$ACESTEP_PATH" ]; then
-    echo "Error: ACESTEP_PATH not set or invalid. Run ./setup.sh first."
+# Check Pixazo path
+if [ ! -d "$PIXAZO_PATH" ]; then
+    echo "Error: PIXAZO_PATH not set or invalid. Run ./setup.sh first."
     exit 1
 fi
 
-echo "Starting ACE-Step UI..."
-echo "ACE-Step: $ACESTEP_PATH"
+echo "Starting Pixazo..."
+echo "Pixazo: $PIXAZO_PATH"
 echo ""
 
 # Start backend in background
@@ -35,7 +35,7 @@ FRONTEND_PID=$!
 
 echo ""
 echo "=================================="
-echo "  ACE-Step UI Running"
+echo "  Pixazo Running"
 echo "=================================="
 echo ""
 echo "  Frontend: http://localhost:${FRONTEND_PORT:-3000}"

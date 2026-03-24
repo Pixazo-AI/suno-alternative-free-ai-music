@@ -22,9 +22,9 @@ export const config = {
     subscriptionKey: process.env.PIXAZO_SUBSCRIPTION_KEY || '',
   },
 
-  // Kept for training routes backward compat
-  acestep: {
-    apiUrl: process.env.ACESTEP_API_URL || 'http://localhost:8001',
+  // Local engine (Gradio) for training routes
+  localEngine: {
+    apiUrl: process.env.LOCAL_ENGINE_URL || 'http://localhost:8001',
   },
 
   // Pexels (optional - for video backgrounds)

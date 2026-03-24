@@ -3,8 +3,8 @@ import json
 import os
 import sys
 
-ACESTEP_PATH = os.environ.get('ACESTEP_PATH', '/home/ambsd/Desktop/aceui/ACE-Step-1.5')
-sys.path.insert(0, ACESTEP_PATH)
+PIXAZO_PATH = os.environ.get('PIXAZO_PATH', '/home/ambsd/Desktop/aceui/Pixazo')
+sys.path.insert(0, PIXAZO_PATH)
 
 from acestep.gpu_config import get_gpu_config
 

@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS songs (
 CREATE TABLE IF NOT EXISTS generation_jobs (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  acestep_task_id TEXT,
+  pixazo_task_id TEXT,
   status TEXT DEFAULT 'pending',
   params TEXT,
   result TEXT,

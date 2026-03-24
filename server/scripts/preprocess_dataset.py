@@ -1,5 +1,5 @@
 """
-Standalone dataset preprocessor for ACE-Step LoRA training.
+Standalone dataset preprocessor for Pixazo LoRA training.
 
 Converts labeled audio samples from a dataset JSON into pre-computed
 tensor files (.pt) suitable for training. This script loads the VAE and
@@ -29,12 +29,12 @@ def main():
         print(f"Error: Dataset file not found: {args.dataset}", file=sys.stderr)
         sys.exit(1)
 
-    # Add ACE-Step root to path for imports
+    # Add Pixazo root to path for imports
     ace_step_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    # Walk up to find ACE-Step-1.5 directory
+    # Walk up to find Pixazo directory
     for candidate in [
-        os.path.join(ace_step_root, "ACE-Step-1.5"),
-        os.path.join(os.path.dirname(ace_step_root), "ACE-Step-1.5"),
+        os.path.join(ace_step_root, "Pixazo"),
+        os.path.join(os.path.dirname(ace_step_root), "Pixazo"),
         os.getcwd(),
     ]:
         if os.path.isdir(candidate) and os.path.isdir(os.path.join(candidate, "acestep")):
@@ -47,8 +47,8 @@ def main():
     try:
         from acestep.training.dataset_builder import DatasetBuilder
     except ImportError as e:
-        print(f"Error: Could not import ACE-Step modules: {e}", file=sys.stderr)
-        print("Make sure this script is run from the ACE-Step-1.5 directory or with the correct Python environment.", file=sys.stderr)
+        print(f"Error: Could not import Pixazo modules: {e}", file=sys.stderr)
+        print("Make sure this script is run from the Pixazo directory or with the correct Python environment.", file=sys.stderr)
         sys.exit(1)
 
     # Load dataset JSON
