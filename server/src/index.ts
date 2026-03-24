@@ -28,7 +28,7 @@ import usersRoutes from './routes/users.js';
 import playlistsRoutes from './routes/playlists.js';
 import contactRoutes from './routes/contact.js';
 import referenceTrackRoutes from './routes/referenceTrack.js';
-import loraRoutes from './routes/lora.js';
+
 import { pool } from './db/pool.js';
 import './db/migrate.js';
 
@@ -409,7 +409,7 @@ app.use('/api/users', usersRoutes);
 app.use('/api/playlists', playlistsRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/reference-tracks', referenceTrackRoutes);
-app.use('/api/lora', loraRoutes);
+
 
 
 // Error handler

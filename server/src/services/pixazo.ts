@@ -1,5 +1,4 @@
 import { writeFile, mkdir, readFile } from 'fs/promises';
-import { existsSync } from 'fs';
 import https from 'https';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -707,21 +706,3 @@ export function cleanupOldJobs(maxAgeMs: number = 3600000): void {
   }
 }
 
-// Kept for backward compatibility (used by generate.ts /limits route)
-export function resolvePythonPath(baseDir: string): string {
-  if (process.env.PYTHON_PATH) {
-    return process.env.PYTHON_PATH;
-  }
-  const isWindows = process.platform === 'win32';
-  const pythonExe = isWindows ? 'python.exe' : 'python';
-  const venvDirs = ['env', '.venv', 'venv'];
-  for (const venvDir of venvDirs) {
-    const venvPython = isWindows
-      ? path.join(baseDir, venvDir, 'Scripts', pythonExe)
-      : path.join(baseDir, venvDir, 'bin', 'python');
-    if (existsSync(venvPython)) {
-      return venvPython;
-    }
-  }
-  return 'python3';
-}

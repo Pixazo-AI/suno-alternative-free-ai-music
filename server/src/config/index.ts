@@ -22,11 +22,6 @@ export const config = {
     subscriptionKey: process.env.PIXAZO_SUBSCRIPTION_KEY || '',
   },
 
-  // Local engine (Gradio) for training routes
-  localEngine: {
-    apiUrl: process.env.LOCAL_ENGINE_URL || 'http://localhost:8001',
-  },
-
   // Pexels (optional - for video backgrounds)
   pexels: {
     apiKey: process.env.PEXELS_API_KEY || '',
@@ -39,12 +34,6 @@ export const config = {
   storage: {
     provider: 'local' as const,
     audioDir: process.env.AUDIO_DIR || path.join(__dirname, '../../public/audio'),
-  },
-
-  // Training datasets
-  datasets: {
-    dir: process.env.DATASETS_DIR || path.join(__dirname, '../../../datasets'),
-    uploadsDir: process.env.DATASETS_UPLOADS_DIR || path.join(__dirname, '../../../datasets/uploads'),
   },
 
   // JWT
